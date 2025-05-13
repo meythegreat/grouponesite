@@ -1,0 +1,36 @@
+{% extends "layout/base.html" %}
+
+{% block 'title' %} Add Gender Page {% endblock 'title' %}
+
+{% block 'content' %}
+{% include "include/sidebar.html" %}
+{% include "include/toastmessage.html" %}
+
+{% comment %} <div class="p-2 sm:ml-64 mt-16 md:mt-14">
+    <form action="#" method="post">
+        <div class="mx-auto w-full md:w-1/3 mb-2">
+            <label for="gender" class="block text-sm font-medium mb-2">Gender</label>
+            <input type="text" class="bg-white mb-2 px-3 py-2.5 borrder-gray-300 text-black block text-sm rounded-sm w-full focus:ring-blue-500 focus:border-blue-600" />
+            <div class="flex justify-end">
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-sm font-medium text-white px-3 py-2.5 rounded-sm shadow-sm cursor-pointer">Save Gender</button>
+            </div>
+        </div>
+    </form>
+</div> {% endcomment %}
+
+<div class="p-2 sm:ml-64 mt-32 md:mt-14">
+    <h2 style="font-size: 24px; margin-bottom: 16px; font-weight: bold; text-align: center;">Add Gender</h2>
+    <form action="/gender/add" method="post">
+    {% csrf_token %}
+        <label for="gender" style="display: block; margin-bottom: 8px; font-weight: 500;">Gender</label>
+        <input type="text" id="gender" name="gender" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 16px;" name="gender" id="gender"/>
+        <div style="text-align: right;">
+            <button type="submit" style="background-color: #16a34a; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">
+                Save Gender
+            </button>
+        </div>
+    </form>
+</div>
+
+
+{% endblock 'content' %}
