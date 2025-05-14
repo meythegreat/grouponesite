@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.contrib import messages
 from .models import Genders
+from django.shortcuts import render, redirect
 
 # Create your views here.
 
@@ -57,3 +58,23 @@ def edit_gender(request, genderId):
 
     except Exception as e:
         return HttpResponse(f'Error occurred during edit gender: {e}')
+
+def delete_gender(request, genderId):
+    try:
+        if request.method == 'POST':
+            genderObj = Genders.objects.get(pk=genderId)
+            genderObj.delete()
+
+            messages.success(request, 'Gender deleted successfully!')
+            return redirect('/gender/list')
+        
+        else: 
+            genderObj = Genders.objects.get(pk=genderId)
+
+            data = {
+                'gender': genderObj
+            }
+
+        return render(request, 'gender/deletegender.html', data)
+    except Exception as e:
+        return HttpResponse(f'Error occurred during deleting of gender: {e}')
