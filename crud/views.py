@@ -80,6 +80,18 @@ def delete_gender(request, genderId):
     except Exception as e:
         return HttpResponse(f'Error occurred during deleting of gender: {e}')
 
+def user_list(request):
+    try:
+        userObj = Users.objects.select_related('gender')
+
+        data = {
+            'users': userObj
+        }
+
+        return render(request, 'user/userslist.html', data)
+    except Exception as e:
+        return HttpResponse(f'Error occurred during loading of user: {e}')
+
 def add_user(request):
     try:
         if request.method == 'POST': 
