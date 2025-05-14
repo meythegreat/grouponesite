@@ -20,6 +20,7 @@ class Users(models.Model):
     gender = models.ForeignKey(Genders, on_delete=models.CASCADE)
     birth_date = models.DateField(blank=False)
     contact_number = models.CharField(max_length=20, blank=False)
+    address = models.CharField(max_length=200, default='Not specified')
     email = models.EmailField(max_length=255, blank=True)
     username = models.CharField(max_length=55, blank=False, unique=True)
     password = models.CharField(max_length=255, blank=False)

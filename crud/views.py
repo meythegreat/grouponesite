@@ -1,8 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.contrib import messages
-from .models import Genders
+from .models import Genders, Users
 from django.shortcuts import render, redirect
+from django.contrib.auth.hashers import make_password
 
 # Create your views here.
 
@@ -21,7 +22,7 @@ def add_gender(request):
         if request.method == 'POST':
             gender = request.POST.get('gender')
 
-            Genders.objects.create(gender=gender).save()
+            Genders.objects.create(gender=gender)
             messages.success(request, 'Gender added successfully!')
             return render(request, 'gender/AddGender.html')
         else:
@@ -78,3 +79,48 @@ def delete_gender(request, genderId):
         return render(request, 'gender/deletegender.html', data)
     except Exception as e:
         return HttpResponse(f'Error occurred during deleting of gender: {e}')
+
+def add_user(request):
+    try:
+        if request.method == 'POST': 
+            fullName = request.POST.get('full_name')
+            gender = request.POST.get('gender')
+            birthDate = request.POST.get('birth_date')
+            address = request.POST.get('address')
+            contactNumber = request.POST.get('contact_number')
+            email = request.POST.get('email')
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            confirmPassword = request.POST.get('confirm_password')
+
+            if not password:
+                messages.error(request, 'Password is required!')
+                return redirect('/user/add')
+
+            if password != confirmPassword:
+                messages.error(request, 'Password and confirm password do not match!')
+                return redirect('/user/add')
+
+            Users.objects.create(
+                full_name=fullName,
+                gender=Genders.objects.get(pk=gender),
+                birth_date=birthDate,
+                address=address,
+                contact_number=contactNumber,
+                email=email,
+                username=username,
+                password=make_password(password)
+            )
+
+            messages.success(request, 'User added successfully!')
+            return redirect('/user/add')
+
+        else:
+            genderObj = Genders.objects.all()
+            data = {
+                'genders': genderObj
+            }
+            return render(request, 'user/AddUser.html', data)
+
+    except Exception as e:
+        return HttpResponse(f'Error occurred during add user: {e}')
