@@ -83,18 +83,16 @@ def delete_gender(request, genderId):
 def user_list(request):
     try:
         userObj = Users.objects.select_related('gender')
-
         data = {
             'users': userObj
         }
-
         return render(request, 'user/userslist.html', data)
     except Exception as e:
         return HttpResponse(f'Error occurred during loading of user: {e}')
 
 def add_user(request):
     try:
-        if request.method == 'POST': 
+        if request.method == 'POST':
             fullName = request.POST.get('full_name')
             gender = request.POST.get('gender')
             birthDate = request.POST.get('birth_date')
@@ -105,23 +103,25 @@ def add_user(request):
             password = request.POST.get('password')
             confirmPassword = request.POST.get('confirm_password')
 
-            if not password:
-                messages.error(request, 'Password is required!')
-                return redirect('/user/add')
-
             if password != confirmPassword:
                 messages.error(request, 'Password and confirm password do not match!')
                 return redirect('/user/add')
 
+            if not password:
+                messages.error(request, 'Password is required!')
+                return redirect('/user/add')
+
+            gender_obj = Genders.objects.get(pk=gender)
+
             Users.objects.create(
                 full_name=fullName,
-                gender=Genders.objects.get(pk=gender),
+                gender=gender_obj,
                 birth_date=birthDate,
                 address=address,
                 contact_number=contactNumber,
                 email=email,
                 username=username,
-                password=make_password(password)
+                password=make_password(password)  # Hash the password
             )
 
             messages.success(request, 'User added successfully!')
