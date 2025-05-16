@@ -16,8 +16,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.contrib.auth import views as auth_views
+from crud import views
 
 urlpatterns = [
     path('', include('crud.urls')),
     path('admin/', admin.site.urls),
+    path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('home/', views.home, name='home'),
+    path('add-user/', views.add_user, name='add_user'),
+    path('gender/list/', views.gender_list, name='gender_list'),
+    path('gender/add/', views.add_gender, name='add_gender'),
+    path('user/list/', views.user_list, name='user_list'),
+    path('user/add/', views.add_user, name='add_user'),
 ]

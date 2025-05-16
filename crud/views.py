@@ -4,9 +4,13 @@ from django.contrib import messages
 from .models import Genders, Users
 from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect
 
 # Create your views here.
 
+@login_required
 def gender_list(request):
     try:
         genders = Genders.objects.all()
@@ -17,6 +21,7 @@ def gender_list(request):
     except Exception as e:  
         return HttpResponse(f'An error occurred during loading of gender: {e}')
 
+@login_required
 def add_gender(request):
     try:
         if request.method == 'POST':
@@ -90,6 +95,7 @@ def user_list(request):
     except Exception as e:
         return HttpResponse(f'Error occurred during loading of user: {e}')
 
+@login_required
 def add_user(request):
     try:
         if request.method == 'POST':
@@ -136,3 +142,46 @@ def add_user(request):
 
     except Exception as e:
         return HttpResponse(f'Error occurred during add user: {e}')
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
+
+        if not username or not password:
+            messages.error(request, 'Both username and password are required.')
+            return render(request, 'login.html')  # Only display after POST with missing fields
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect('home')
+
+        else:
+            messages.error(request, 'Invalid username or password.')
+            return render(request, 'login.html')
+        
+    # For GET request: just render login page without adding any messages    
+    return render(request, 'login.html')
+
+def home(request):
+    return render(request, 'home.html')
+
+# @login_required
+# def edit_user(request, id):
+#     user = get_object_or_404(Users, id=id)
+#     if request.method == 'POST':
+#         user.full_name = request.POST.get('full_name')
+#         user.email = request.POST.get('email')
+#         user.save()
+#         messages.success(request, 'User updated successfully!')
+#         return redirect('user_list')
+#     return render(request, 'user/EditUser.html', {'user': user})
+
+# @login_required
+# def delete_user(request, id):
+#     user = get_object_or_404(Users, id=id)
+#     user.delete()
+#     messages.success(request, 'User deleted successfully!')
+#     return redirect('user_list')
