@@ -1,11 +1,11 @@
 {% extends "layout/base.html" %}
+{% include "include/toastmessage.html" %}
 
 {% block 'title' %} Add User {% endblock 'title' %}
 
 {% block 'content' %}
 
 {% include "include/sidebar.html" %}
-{% include "include/toastmessage.html" %}
 
 <div class="p-2 sm:ml-64 mt-32 md:mt-14">
     <form action="/user/add" method="post">
@@ -62,5 +62,73 @@
             </div>
         </form>
 </div> 
+
+<script>
+function showToast(type, message) {
+    const toast = document.createElement('div');
+    toast.className = `fixed top-20 left-66 max-w-xs p-4 mb-4 text-white ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} rounded-lg shadow-sm flex items-center z-50`;
+    toast.style.transition = 'opacity 0.3s ease';
+    toast.style.position = 'fixed';
+    toast.style.zIndex = '1000';
+    toast.innerHTML = `
+        <span class="text-sm font-normal flex-1">${message}</span>
+        <button class="ml-2 text-white" onclick="this.parentElement.remove()">
+            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+            </svg>
+        </button>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if show_error_toast %}
+        showToast('error', '{{ error_message }}');
+    {% endif %}
+});
+</script>
+
+
+{% comment %} <script>
+function showToast(type, message) {
+    const toast = document.createElement('div');
+    toast.className = `fixed top-16 left-66 max-w-xs p-4 mb-4 text-white ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} rounded-lg shadow-sm flex items-center z-50`;
+    toast.style.transition = 'opacity 0.3s ease';
+    toast.innerHTML = `
+        <span class="text-sm font-normal flex-1">${message}</span>
+        <button class="ml-2 text-white" onclick="this.parentElement.remove()">
+            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+            </svg>
+        </button>
+    `;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300); // Smooth fade out
+    }, 3000);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    if (urlParams.get('show_success_toast') === 'true') {
+        showToast('success', 'User  added successfully!');
+    }
+
+    {% if messages %}
+        {% for message in messages %}
+            showToast('{{ message.tags }}', '{{ message }}');
+        {% endfor %}
+    {% endif %}
+});
+</script> {% endcomment %}
 
 {% endblock 'content' %}

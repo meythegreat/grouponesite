@@ -127,7 +127,7 @@ def add_user(request):
     try:
         if request.method == 'POST':
             fullName = request.POST.get('full_name')
-            gender = request.POST.get('gender')
+            gender_id = request.POST.get('gender')
             birthDate = request.POST.get('birth_date')
             address = request.POST.get('address')
             contactNumber = request.POST.get('contact_number')
@@ -136,39 +136,44 @@ def add_user(request):
             password = request.POST.get('password')
             confirmPassword = request.POST.get('confirm_password')
 
+            errors = []
+
+            if not fullName or not gender_id or not birthDate or not address or not contactNumber or not username or not password:
+                errors.append('All fields except Email are required.')
             if password != confirmPassword:
-                messages.error(request, 'Password and confirm password do not match!')
-                return redirect('/user/add')
+                errors.append('Passwords do not match.')
+            if Users.objects.filter(username=username).exists():
+                errors.append('Username already exists.')
 
-            if not password:
-                messages.error(request, 'Password is required!')
-                return redirect('/user/add')
+            if errors:
+                genders = Genders.objects.all()
+                return render(request, 'user/AddUser.html', {
+                    'genders': genders,
+                    'show_error_toast': True,
+                    'error_message': errors[0]
+                })
 
-            gender_obj = Genders.objects.get(pk=gender)
-
+            gender = Genders.objects.get(gender_id=gender_id)
             Users.objects.create(
                 full_name=fullName,
-                gender=gender_obj,
+                gender=gender,
                 birth_date=birthDate,
                 address=address,
                 contact_number=contactNumber,
                 email=email,
                 username=username,
-                password=make_password(password)  # Hash the password
+                password=make_password(password)
             )
 
+            # Redirect with success toast trigger
             messages.success(request, 'User added successfully!')
-            return redirect('/user/add')
+            return redirect('/user/list?show_success_toast=1')
 
-        else:
-            genderObj = Genders.objects.all()
-            data = {
-                'genders': genderObj
-            }
-            return render(request, 'user/AddUser.html', data)
+        genders = Genders.objects.all()
+        return render(request, 'user/AddUser.html', {'genders': genders})
 
     except Exception as e:
-        return HttpResponse(f'Error occurred during add user: {e}')
+        return HttpResponse(f'Error occurred during adding of user: {e}')
 
 def login_view(request):
     if request.method == 'POST':
