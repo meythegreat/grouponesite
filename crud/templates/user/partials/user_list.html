@@ -1,0 +1,20 @@
+<tbody class="text-xs text-black">
+    {% for user in page_obj %}
+    <tr class="hover:bg-gray-100 border-b border-gray-200">
+        <td class="px-6 py-3">{{ user.full_name }}</td>
+        <td class="px-6 py-3">{{ user.gender.gender }}</td>
+        <td class="px-6 py-3">{{ user.birth_date }}</td>
+        <td class="px-6 py-3">{{ user.address }}</td>
+        <td class="px-6 py-3">{{ user.contact_number }}</td>
+        <td class="px-6 py-3">{{ user.email }}</td>
+        <td class="px-6 py-3">
+            <div class="inline-flex shadow-sm">
+                <a href="/user/edit/{{ user.id }}" class="bg-green-600 px-3 py-2.5 text-white rounded-sm hover:bg-green-700">Edit</a>
+                <a href="/user/delete/{{ user.id }}" class="bg-red-600 px-3 py-2.5 text-white rounded-sm hover:bg-red-700">Delete</a>
+            </div>
+        </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="7" class="text-center py-4">No users found</td></tr>
+    {% endfor %}
+</tbody>

@@ -11,6 +11,13 @@ Users List
 
 <div class="p-2 sm:ml-64 mt-16 md:mt-14">
     <div class="relative overflow-x-auto rounded-sm shadow-sm">
+        <!-- Search Form with Real-Time Functionality -->
+        <form method="get" class="flex mb-4">
+            <input type="text" name="search" id="searchInput" placeholder="Search users..." value="{{ search_query }}" class="bg-white px-3 py-2 border rounded-l-sm focus:outline-none">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-r-sm">Search</button>
+        </form>
+
+        <!-- User Table -->
         <table class="w-full">
             <thead class="text-xs text-white bg-blue-600">
                 <tr>
@@ -24,7 +31,7 @@ Users List
                 </tr>
             </thead>
             <tbody class="text-xs text-black">
-                {% for user in users %}
+                {% for user in page_obj %}
                 <tr class="hover:bg-gray-100 border-b border-gray-200">
                     <td class="px-6 py-3">{{ user.full_name }}</td>
                     <td class="px-6 py-3">{{ user.gender.gender }}</td>
@@ -34,16 +41,54 @@ Users List
                     <td class="px-6 py-3">{{ user.email }}</td>
                     <td class="px-6 py-3">
                         <div class="inline-flex shadow-sm">
-                        <a href="/gender/edit/{{ gender.gender_id }}" class="bg-green-600 px-3 2 py-2.5 font-medium text-sm text-white rounded-s-sm hover:bg-green-700 hover:outline-none">Edit</a>
-                        <a href="/gender/delete/{{ gender.gender_id }}" class="bg-red-600 px-3 py-2.5 font-medium text-sm text-white rounded-e-sm hover:bg-red-700 hover:outline-none">Delete</a>
-                      </div>
+                            <a href="/user/edit/{{ user.id }}" class="bg-green-600 px-3 py-2.5 font-medium text-sm text-white rounded-s-sm hover:bg-green-700">Edit</a>
+                            <a href="/user/delete/{{ user.id }}" class="bg-red-600 px-3 py-2.5 font-medium text-sm text-white rounded-e-sm hover:bg-red-700">Delete</a>
+                        </div>
                     </td>
                 </tr>                
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4">No users found</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
-    </div>
-</div>
 
+        <!-- Pagination Controls -->
+        <div class="flex flex-col items-center mt-4">
+            <span class="mb-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+            <div class="flex space-x-2">
+                <a href="?page=1" class="bg-gray-200 px-3 py-1 rounded">First</a>
+
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="bg-gray-200 px-3 py-1 rounded">Previous</a>
+                {% else %}
+                    <span class="bg-gray-200 px-3 py-1 rounded opacity-50 cursor-not-allowed">Previous</span>
+                {% endif %}
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="bg-gray-200 px-3 py-1 rounded">Next</a>
+                {% else %}
+                    <span class="bg-gray-200 px-3 py-1 rounded opacity-50 cursor-not-allowed">Next</span>
+                {% endif %}
+
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="bg-gray-200 px-3 py-1 rounded">Last</a>
+            </div>
+        </div>
+
+<!-- Real-Time Search JavaScript -->
+<script>
+document.getElementById('searchInput').addEventListener('input', function() {
+    const search = this.value;
+    fetch(`/user/list/?search=${search}`, {
+        headers: {'x-requested-with': 'XMLHttpRequest'}
+    })
+    .then(response => response.text())
+    .then(html => {
+        document.querySelector('tbody').innerHTML = new DOMParser().parseFromString(html, 'text/html').querySelector('tbody').innerHTML;
+    });
+});
+</script>
 
 {% endblock 'content' %}

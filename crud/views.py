@@ -7,6 +7,9 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 
 # Create your views here.
 
@@ -85,13 +88,37 @@ def delete_gender(request, genderId):
     except Exception as e:
         return HttpResponse(f'Error occurred during deleting of gender: {e}')
 
+@login_required
 def user_list(request):
     try:
-        userObj = Users.objects.select_related('gender')
-        data = {
-            'users': userObj
-        }
+        search_query = request.GET.get('search', '')
+        userObj = Users.objects.select_related('gender').filter(
+            full_name__icontains=search_query
+        )
+
+        paginator = Paginator(userObj, 10)  # 10 users per page
+        page_number = request.GET.get('page')
+
+        # Validate the page number
+        try:
+            page_number = int(page_number)
+        except (TypeError, ValueError):
+            page_number = 1
+
+        # If page is less than 1, reset to 1
+        if page_number < 1:
+            page_number = 1
+
+        # If page is greater than max, reset to max
+        if page_number > paginator.num_pages:
+            page_number = paginator.num_pages
+
+        # Get the page object
+        page_obj = paginator.get_page(page_number)
+
+        data = {'page_obj': page_obj, 'search_query': search_query}
         return render(request, 'user/userslist.html', data)
+
     except Exception as e:
         return HttpResponse(f'Error occurred during loading of user: {e}')
 
