@@ -11,84 +11,89 @@ Users List
 
 <div class="p-2 sm:ml-64 mt-16 md:mt-14">
     <div class="relative overflow-x-auto rounded-sm shadow-sm">
-        <!-- Search Form with Real-Time Functionality -->
+        <h2 class="text-2xl font-semibold text-center mb-4">User Lists</h2>
+        <p class="text-sm text-left mb-2">Users in list: {{ total_users }}</p>
         <form method="get" class="flex mb-4">
-            <input type="text" name="search" id="searchInput" placeholder="Search users..." value="{{ search_query }}" class="bg-white px-3 py-2 border rounded-l-sm focus:outline-none">
+            <input type="text" name="search" id="searchInput" placeholder="Search by name, email, address, contact, or gender..." value="{{ search_query }}" class="bg-white px-3 py-2 border rounded-l-sm focus:outline-none w-full">
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-r-sm">Search</button>
         </form>
 
-        <!-- User Table -->
-        <table class="w-full">
-            <thead class="text-xs text-white bg-blue-600">
-                <tr>
-                    <th class="px-6 py-3">Full Name</th>
-                    <th class="px-6 py-3">Gender</th>
-                    <th class="px-6 py-3">Birth Date</th>
-                    <th class="px-6 py-3">Address</th>
-                    <th class="px-6 py-3">Contact Number</th>
-                    <th class="px-6 py-3">Email</th>
-                    <th class="px-6 py-3">Action</th>
-                </tr>
-            </thead>
-            <tbody class="text-xs text-black">
-                {% for user in page_obj %}
-                <tr class="hover:bg-gray-100 border-b border-gray-200">
-                    <td class="px-6 py-3">{{ user.full_name }}</td>
-                    <td class="px-6 py-3">{{ user.gender.gender }}</td>
-                    <td class="px-6 py-3">{{ user.birth_date }}</td>
-                    <td class="px-6 py-3">{{ user.address }}</td>
-                    <td class="px-6 py-3">{{ user.contact_number }}</td>
-                    <td class="px-6 py-3">{{ user.email }}</td>
-                    <td class="px-6 py-3">
-                        <div class="inline-flex shadow-sm">
-                            <a href="/user/edit/{{ user.id }}" class="bg-green-600 px-3 py-2.5 font-medium text-sm text-white rounded-s-sm hover:bg-green-700">Edit</a>
-                            <a href="/user/delete/{{ user.id }}" class="bg-red-600 px-3 py-2.5 font-medium text-sm text-white rounded-e-sm hover:bg-red-700">Delete</a>
-                        </div>
-                    </td>
-                </tr>                
-                {% empty %}
-                <tr>
-                    <td colspan="7" class="text-center py-4">No users found</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <!-- Table -->
+        <div class="overflow-x-auto w-full">
+            <table class="w-full">
+                <thead class="text-xs text-white bg-blue-600">
+                    <tr>
+                        <th class="px-6 py-3 text-center">Full Name</th>
+                        <th class="px-6 py-3 text-center">Gender</th>
+                        <th class="px-6 py-3 text-center">Birth Date</th>
+                        <th class="px-6 py-3 text-center">Address</th>
+                        <th class="px-6 py-3 text-center">Contact Number</th>
+                        <th class="px-6 py-3 text-center">Email</th>
+                        <th class="px-6 py-3 text-center" style="min-width: 120px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="text-xs text-black text-center">
+                    {% for user in page_obj %}
+                    <tr class="hover:bg-gray-100 border-b border-gray-200">
+                        <td class="px-6 py-3">{{ user.full_name }}</td>
+                        <td class="px-6 py-3">{{ user.gender.gender }}</td>
+                        <td class="px-6 py-3">{{ user.birth_date }}</td>
+                        <td class="px-6 py-3">{{ user.address }}</td>
+                        <td class="px-6 py-3">{{ user.contact_number }}</td>
+                        <td class="px-6 py-3">{{ user.email }}</td>
+                        <td class="px-6 py-3 flex justify-center space-x-2">
+                            <a href="{% url 'edit_user' user.user_id %}" class="bg-green-600 px-2 py-1 text-white rounded">Edit</a>
+                            <a href="{% url 'delete_user' user.user_id %}" class="bg-red-600 px-2 py-1 text-white rounded">Delete</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">No users found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
         <!-- Pagination Controls -->
-        <div class="flex flex-col items-center mt-4">
-            <span class="mb-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-
-            <div class="flex space-x-2">
-                <a href="?page=1" class="bg-gray-200 px-3 py-1 rounded">First</a>
-
+        <div class="flex justify-center mt-4">
+            <nav class="inline-flex shadow-sm" aria-label="Pagination">
                 {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}" class="bg-gray-200 px-3 py-1 rounded">Previous</a>
-                {% else %}
-                    <span class="bg-gray-200 px-3 py-1 rounded opacity-50 cursor-not-allowed">Previous</span>
+                <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 bg-blue-600 text-white">Previous</a>
                 {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if num == page_obj.number %}
+                        <span class="px-3 py-2 bg-white text-blue-600">{{ num }}</span>
+                    {% else %}
+                        <a href="?page={{ num }}" class="px-3 py-2 bg-blue-600 text-white hover:bg-blue-700">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
 
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}" class="bg-gray-200 px-3 py-1 rounded">Next</a>
-                {% else %}
-                    <span class="bg-gray-200 px-3 py-1 rounded opacity-50 cursor-not-allowed">Next</span>
+                <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 bg-blue-600 text-white">Next</a>
                 {% endif %}
-
-                <a href="?page={{ page_obj.paginator.num_pages }}" class="bg-gray-200 px-3 py-1 rounded">Last</a>
-            </div>
+            </nav>
         </div>
 
-<!-- Real-Time Search JavaScript -->
-<script>
-document.getElementById('searchInput').addEventListener('input', function() {
-    const search = this.value;
-    fetch(`/user/list/?search=${search}`, {
-        headers: {'x-requested-with': 'XMLHttpRequest'}
-    })
-    .then(response => response.text())
-    .then(html => {
-        document.querySelector('tbody').innerHTML = new DOMParser().parseFromString(html, 'text/html').querySelector('tbody').innerHTML;
-    });
-});
-</script>
+        <script>
+        let searchTimeout;
+        document.getElementById('searchInput').addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const search = this.value;
+                fetch(`/user/list/?search=${search}`, {
+                    headers: {'x-requested-with': 'XMLHttpRequest'}
+                })
+                .then(response => response.text())
+                .then(html => {
+                    document.querySelector('tbody').innerHTML = new DOMParser().parseFromString(html, 'text/html').querySelector('tbody').innerHTML;
+                });
+            }, 300);  // Debounce 300ms
+        });
+        </script>
+
 
 {% endblock 'content' %}

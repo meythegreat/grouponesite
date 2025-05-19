@@ -8,6 +8,7 @@
 {% include "include/sidebar.html" %}
 
 <div class="p-2 sm:ml-64 mt-32 md:mt-14">
+    <h2 class="text-2xl font-semibold text-center mb-4">Add User</h2>
     <form action="/user/add" method="post">
         {% csrf_token %}
         <div class="grid grid-cols-2 gap-4 mx-auto">

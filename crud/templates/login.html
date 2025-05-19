@@ -1,28 +1,35 @@
-{% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Login</title>
-    <link rel="stylesheet" href="{% static 'css/output.css' %}">
-</head>
-<body class="flex items-center justify-center h-screen bg-gray-100">
-    <div class="bg-white p-6 rounded shadow-md w-96">
-        <h2 class="text-2xl font-bold mb-4 text-center">Login</h2>
+{% extends "layout/base.html" %}
+
+{% block 'title' %}Login{% endblock 'title' %}
+
+{% block 'content' %}
+<div class="flex items-center justify-center h-screen">
+    <div class="w-96 p-6 bg-white rounded shadow-md">
+        <h2 class="text-2xl font-semibold text-center mb-4">Login</h2>
+        
+        <!-- Error Messages -->
+        {% if messages %}
+        <ul class="mb-4">
+            {% for message in messages %}
+            <li class="text-red-600">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
         <form method="post">
             {% csrf_token %}
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Username</label>
-                <input type="text" name="username" class="w-full p-2 border border-gray-300 rounded">
+                <label class="block text-sm text-gray-700">Username</label>
+                <input type="text" name="username" class="w-full px-3 py-2 border rounded focus:outline-none">
             </div>
+
             <div class="mb-4">
-                <label class="block text-sm font-medium mb-1">Password</label>
-                <input type="password" name="password" class="w-full p-2 border border-gray-300 rounded">
+                <label class="block text-sm text-gray-700">Password</label>
+                <input type="password" name="password" class="w-full px-3 py-2 border rounded focus:outline-none">
             </div>
-            <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login</button>
+
+            <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Login</button>
         </form>
-        {% if form.errors %}
-            <p class="mt-2 text-red-600">Invalid username or password</p>
-        {% endif %}
     </div>
-</body>
-</html>
+</div>
+{% endblock 'content' %}
