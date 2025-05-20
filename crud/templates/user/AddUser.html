@@ -1,16 +1,26 @@
 {% extends "layout/base.html" %}
-{% include "include/toastmessage.html" %}
 
 {% block 'title' %} Add User {% endblock 'title' %}
 
 {% block 'content' %}
 
 {% include "include/sidebar.html" %}
+{% include "include/toastmessage.html" %}
 
 <div class="p-2 sm:ml-64 mt-32 md:mt-14">
     <h2 class="text-2xl font-semibold text-center mb-4">Add User</h2>
     <form action="/user/add" method="post">
         {% csrf_token %}
+                {% if errors %}
+            <div class="mb-4">
+                {% for error in errors %}
+                    <div class="bg-red-100 text-red-700 px-4 py-2 rounded mb-2">
+                        {{ error }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         <div class="grid grid-cols-2 gap-4 mx-auto">
                 <div class="col-span-2 md:col-span-1">
                     <div class="mb-4">

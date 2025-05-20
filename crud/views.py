@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import Genders, Users
 from django.db.models import Q
+from django.http import HttpResponse
 
 import re 
 
@@ -56,49 +57,90 @@ def user_list(request):
 
 @login_required
 def add_user(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        if Users.objects.filter(username=username).exists():
-            messages.error(request, 'Username already exists. Please choose another one.')
-            return redirect('add_user')
+    try:
+        genders = Genders.objects.all()
 
-        full_name = request.POST.get('full_name')
-        gender = Genders.objects.get(gender_id=request.POST.get('gender'))
-        Users.objects.create(
-            full_name=full_name,
-            gender=gender,
-            birth_date=request.POST.get('birth_date'),
-            address=request.POST.get('address'),
-            contact_number=request.POST.get('contact_number'),
-            email=request.POST.get('email'),
-            username=username,
-            password=make_password(request.POST.get('password'))
-        )
-        messages.success(request, 'User added successfully!')
-        return redirect('user_list')
+        if request.method == 'POST':
+            fullName = request.POST.get('full_name')
+            gender_id = request.POST.get('gender')
+            birthDate = request.POST.get('birth_date')
+            address = request.POST.get('address')
+            contactNumber = request.POST.get('contact_number')
+            email = request.POST.get('email')
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            confirmPassword = request.POST.get('confirm_password')
 
-    genders = Genders.objects.all()
-    return render(request, 'user/AddUser.html', {'genders': genders})
+            # Validation
+            if not all([fullName, gender_id, birthDate, address, contactNumber, username, password]):
+                messages.error(request, 'All fields except Email are required.')
+                return render(request, 'user/AddUser.html', {'genders': genders})
 
+            if password != confirmPassword:
+                messages.error(request, 'Passwords do not match.')
+                return render(request, 'user/AddUser.html', {'genders': genders})
+
+            if Users.objects.filter(username=username).exists():
+                messages.error(request, 'Username already exists.')
+                return render(request, 'user/AddUser.html', {'genders': genders})
+
+            gender = Genders.objects.get(gender_id=gender_id)
+            Users.objects.create(
+                full_name=fullName,
+                gender=gender,
+                birth_date=birthDate,
+                address=address,
+                contact_number=contactNumber,
+                email=email,
+                username=username,
+                password=make_password(password)
+            )
+
+            messages.success(request, 'User added successfully!')
+            return redirect('/user/list')
+
+        return render(request, 'user/AddUser.html', {'genders': genders})
+
+    except Exception as e:
+        return HttpResponse(f'Error occurred during adding of user: {e}')
 
 @login_required
 def edit_user(request, userId):
-    user = get_object_or_404(Users, pk=userId)
+    try:
+        user = Users.objects.get(user_id=userId)
+        genders = Genders.objects.all()  # ✅ fetch all gender options
 
-    if request.method == 'POST':
-        user.full_name = request.POST.get('full_name')
-        user.gender = Genders.objects.get(gender_id=request.POST.get('gender'))
-        user.birth_date = request.POST.get('birth_date')
-        user.address = request.POST.get('address')
-        user.contact_number = request.POST.get('contact_number')
-        user.email = request.POST.get('email')
-        user.username = request.POST.get('username')
-        user.save()
-        messages.success(request, 'User updated successfully!')
-        return redirect('user_list')
+        if request.method == 'POST':
+            fullName = request.POST.get('full_name')
+            email = request.POST.get('email')
+            username = request.POST.get('username')
+            gender_id = request.POST.get('gender')
 
-    genders = Genders.objects.all()
-    return render(request, 'user/EditUser.html', {'user': user, 'genders': genders})
+            # Check for username uniqueness
+            if Users.objects.exclude(user_id=userId).filter(username=username).exists():
+                messages.error(request, 'Username is already taken.')
+                return redirect(f'/user/edit/{userId}/')
+
+            user.full_name = fullName
+            user.email = email
+            user.username = username
+            user.gender = Genders.objects.get(gender_id=gender_id)
+            user.save()
+
+            messages.success(request, 'User updated successfully!')
+            return redirect('/user/list')
+
+        return render(request, 'user/EditUser.html', {
+            'user': user,
+            'genders': genders
+        })
+
+    except Users.DoesNotExist:
+        messages.error(request, 'User does not exist.')
+        return redirect('/user/list')
+
+    except Exception as e:
+        return HttpResponse(f'Error occurred during user edit: {e}')
 
 @login_required
 def edit_gender(request, genderId):
@@ -121,15 +163,24 @@ def delete_gender(request, genderId):
         return redirect('gender_list')
     return render(request, 'gender/DeleteGender.html', {'gender': gender})
 
-
 @login_required
 def delete_user(request, userId):
-    user = get_object_or_404(Users, pk=userId)
-    if request.method == 'POST':
-        user.delete()
-        messages.success(request, 'User deleted successfully!')
-        return redirect('user_list')
-    return render(request, 'user/DeleteUser.html', {'user': user})
+    try:
+        user = Users.objects.get(user_id=userId)
+
+        if request.method == 'POST':
+            user.delete()
+            messages.success(request, 'User deleted successfully!')
+            return redirect('/user/list')
+
+        return render(request, 'user/deleteuser.html', {'user': user})
+
+    except Users.DoesNotExist:
+        messages.error(request, 'User does not exist.')
+        return redirect('/user/list')
+
+    except Exception as e:
+        return HttpResponse(f'Error occurred during user deletion: {e}')
 
 @login_required
 def change_password(request, userId):
@@ -166,7 +217,7 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-
+@login_required
 def signup_view(request):
     if request.method == 'POST':
         full_name = request.POST.get('full_name')
